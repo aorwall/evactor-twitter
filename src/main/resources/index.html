@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Evator Twitter example</title>
+    <style type="text/css">
+      * { margin:0; padding:0; }
+      body { font-size: 24px; font-family:helvetica, sans serif; padding:1em; color:#333; }
+      input[type='text'] { font-size:24px; } #debug { font-size:16px; color:#ccc; }
+      ul { list-style:none; }
+      .who { color:#FF00C3; }
+    </style>
+    <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.4.4/jquery.min.js"></script>
+    <script text="text/javascript" src="https://raw.github.com/DukeLeNoir/jQCloud/master/jqcloud/jqcloud-1.0.0.js"></script>
+    <link rel="stylesheet" href="https://raw.github.com/DukeLeNoir/jQCloud/master/jqcloud/jqcloud.css">
+    
+  </head>
+  <body>
+    <div id="debug"></div>
+    <div id="example"></div>
+    <script type="text/javascript">
+       (function(jq){
+        
+         var word_array = new Array(50);
+//          for(var j = 0; j < 50; j++){
+//         	 word_array[j] = {text: "", weight: 0}
+//          }
+         var words = new Array(50);
+         var min = 0;
+         var min_index = 0;
+         var count = 0;
+         
+         var socket, host = "ws://178.79.132.171:8080/socket/twitter:hashtag:count";
+
+          var supported = function() { return window.WebSocket || window.MozWebSocket; }
+          , newWebSocket = function(uri) { return window.WebSocket ?
+            new WebSocket(uri) : new MozWebSocket(uri)
+           }
+          , createSocket = function(uri) {
+            if(supported()) {
+               window.socket = socket = newWebSocket(uri);
+               socket.onmessage = function(e) {
+                 var event = jq.parseJSON(e.data)
+                 var value = event.value
+                 var name = event.categories[0]
+                 var i = 0;
+                 count++;
+                 jq("#debug").text("["+count+"] " + name + " (" + value + ")");
+                 if(value >= min){
+                   min = 0; 
+                   var set = false;
+                     
+                   
+                   while(word_array[i] != null && i < 50){
+                     
+                     if(word_array[i].text == name){
+                       word_array[i].weight = value;
+                       set = true;
+                     }
+
+                     if(min == 0 || min > word_array[i].weight){
+                       min = word_array[i].weight;
+                       min_index = i;
+                     }
+                     
+                     i++;
+                   }
+                   
+                   if(!set && i == 50 && value > min){ // replace
+                     word_array[min_index] = { text: name, weight: value}
+                   } else if(!set){ // add
+                     word_array[i] = { text: name, weight: value}
+                   }
+                   
+                   word_array.sort(function(a,b){
+                     if(a != null && b != null)
+                       return b.weight-a.weight;
+                     else 
+                       return 0;
+                   });
+                   
+                   for(var j = 0; j < 50; j++){
+                      if(word_array[j] != null ){
+                        words[j] = word_array[j].text + " (" + word_array[j].weight + ")";
+                      }
+                    
+                   }
+                   $("#example").text("Popular hashtags: " + words);
+                   
+                 }
+                 
+                 //jq('ul').first().prepend(['<li>' + event.categories + ': ' + event.value + '</li>'].join(""));
+               }
+               socket.onopen = function(e) {
+                 debug('connection open')
+               }
+               socket.onclose = function(e) {
+                 debug('connection closed');
+               }
+             } else {
+               alert("your browser does not support web sockets. try chrome.");
+             }
+          }
+          , debug = function(msg) { jq("#debug").html(msg); }
+          , isOpen = function() { return socket ?
+            socket.readyState == (window.WebSocket ? WebSocket.OPEN : MozWebSocket.OPEN) : false;
+          }
+          , send = function(message) {
+            return;
+          }
+          , closeSocket = function() { if(socket) { socket.close(); } }
+          , openSocket = function() {
+             if(isOpen()) {
+               alert('socket already open');
+               return;
+             }
+             createSocket(host);
+          }
+          , toggleConnection = function() { if(isOpen()) { closeSocket(); } else { openSocket(); } };
+
+          createSocket(host);
+
+          jq("#message").bind('keydown',function(){
+             jq("#submit").removeAttr("disabled");
+             jq(this).unbind('keydown');
+          });
+          jq("#frm").submit(function(e){
+            e.preventDefault();
+            send(this.message.value);
+            this.message.value = '';
+            return false;
+          });
+          jq("#tooglr").click(function(e){
+            e.preventDefault();
+            toggleConnection();
+            return false;
+          });
+       })(jQuery);
+    </script>
+  </body>
+</html>
