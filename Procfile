@@ -1,1 +1,1 @@
-evactor: target/start
+evactor: target/start org.evactor.ExampleKernel
