@@ -83,7 +83,13 @@ class TwitterListener(sendTo: ActorRef, url: String, username: String, password:
     if(username == null || password == null)
       throw new ConfigurationException("No credentials provided")
     
-    val credentials = "%s:%s".format(username, password)
+    val credentials = if(System.getenv("TWITTER_USERNAME") != null && System.getenv("TWITTER_PASSWORD") != null){
+      "%s:%s".format(System.getenv("TWITTER_USERNAME"), System.getenv("TWITTER_PASSWORD"))
+    } else {
+      "%s:%s".format(username, password)
+    }
+    
+     
     val client = new DefaultHttpClient();
     val method = new HttpGet(url);
     val encoded = Base64.encodeBase64String(credentials.getBytes)
