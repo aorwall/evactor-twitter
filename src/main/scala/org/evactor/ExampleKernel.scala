@@ -25,6 +25,7 @@ import org.evactor.subscribe.Subscriptions
 import unfiltered.netty.websockets._
 import unfiltered.request.{Path, Seg}
 import unfiltered.response.{BadRequest, ResponseString}
+import scala.collection.mutable.HashMap
 
 object ExampleKernel {
   //test
@@ -39,6 +40,8 @@ class ExampleKernel extends Bootable {
   val mapper = new ObjectMapper()
   mapper.registerModule(DefaultScalaModule)
 
+  val activeWebsockets = HashMap[String, ActorRef]()
+  
   lazy val system = ActorSystem("twitterExample")
   
   // context
@@ -60,11 +63,14 @@ class ExampleKernel extends Bootable {
   lazy val nettyServer = unfiltered.netty.Http(port)
     .handler(unfiltered.netty.websockets.Planify({
       case Path(Seg("socket" :: channel :: Nil))  => {
-        case Open(s) => system.actorOf(Props(new WebsocketProducer(Subscriptions(channel), sendEvent(s) _)), name = s.channel.getId.toString)
+        case Open(s) => {
+          val actor = system.actorOf(Props(new WebsocketProducer(Subscriptions(channel), sendEvent(s) _)), name = s.channel.getId.toString)
+          activeWebsockets += s.channel.getId.toString->actor
+        }
         case Message(s, Text(msg)) => 
-        case Close(s) => system.actorFor(s.channel.getId.toString) ! PoisonPill
+        case Close(s) => killActor(s.channel.getId.toString); 
         case Error(s, e) => e match {
-          case e: ClosedChannelException => system.actorFor(s.channel.getId.toString) ! PoisonPill
+          case e: ClosedChannelException => killActor(s.channel.getId.toString) 
           case _ => e.printStackTrace
         }
       }}).onPass(_.sendUpstream(_)))
@@ -75,6 +81,13 @@ class ExampleKernel extends Bootable {
       case _ => ResponseString("Couldn't handle request")
     }))
   
+  def killActor(id: String){
+     activeWebsockets.remove(id) match {
+       case Some(actor) => system.stop(actor)
+       case None => 
+     }
+  }  
+    
   def startup = {
     if(!system.settings.config.hasPath("evactor")) throw new RuntimeException("No configuration found!")
     context  // Start evactor context
