@@ -85,7 +85,7 @@ object Dependency {
 
   // Versions
   object V {
-    val Akka = "2.1-SNAPSHOT"
+    val Akka = "2.1-20120707-000837"
     val Jackson = "2.0.2"
     val Scalatest = "1.6.1"
     val Slf4j = "1.6.4"

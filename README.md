@@ -1,8 +1,16 @@
-Twitter Example
+Evactor Twitter example
 ====================
-This is an example implementation of Evactor that analyses status updates on Twitter. It receives tweets from the [Twitter Streaming API](https://dev.twitter.com/docs/streaming-api). 
+This is an example implementation of Evactor that analyses status updates on 
+Twitter. It receives tweets from the [Twitter Streaming API](https://dev.twitter.com/docs/streaming-api). 
+The hashtags are the extracted from the tweets and processors in Evactor keep a
+count on how many times each hashtag occurred for the last 15 minutes. When the 
+count changes, an event with the current count is published to a channel. 
 
-By using Evactor to process tweets as events, we can find patterns and/or determine odd behaviour in real time. In this example we will look for popular URL's, trending hashtags and alert when such events occurs. By enabling the API and Storage modules it will also be possible to go back and look at historic data and statistics.
+To visualize this a web page is provided that receives all new events. A demo
+of this page is found here: 
+
+By following the instructions below you should be able to deploy this application yourself.
+
 
 Installation
 ---------------------
@@ -11,21 +19,22 @@ Installation
 
 Install [sbt](https://github.com/harrah/xsbt/wiki/Getting-Started-Setup) if you don't already have it. The application has been tested with sbt 0.11.3.
 
-Clone the Evactor repo: `git clone git://github.com/aorwall/evactor.git`
+Clone the Evactor repo: `git clone git://github.com/aorwall/evactor-twitter.git`
 
 Replace `[TWITTER_USERNAME]` and `[TWITTER_PASSWORD]` your own Twitter username and password in: `evactor/example/src/main/resources/application.conf`
 
-Run *sbt* and build the example jar:
+Build the example jar with the following command:
 ```text
-$ sbt
-> project example
-> assembly
-> exit
+$ sbt assembly
 ```
 
 An executable jar file can now be found in `evactor/example/target` and is executed with the command `java -jar evactorExample.jar`. 
 
-See [Cassandra storage] and [API] for instructions on how to enable the storage and API modules.
+
+### Run binary
+
+
+
 
 Understand the configuration
 ---------------------
@@ -58,8 +67,8 @@ twitter_collector {
 }
 ```
 
-### Trending hashtags
-Look for trending hashtags by analysing events with a specific hashtag that more than doubles in a 15 minutes time.
+### Popular hashtags
+Look for popular hashtags by analysing how many times events with a specific hashtag occured in a 15 minutes time.
 
 #### Filter 
 A [*Filter*](https://github.com/aorwall/evactor/blob/master/core/src/main/scala/org/evactor/process/route/Filter.scala) subscribes to `twitter` and filters out    all status updates not containing hashtags and publishes the rest to the channel `twitter:hashtag` categorized by hashtag.
@@ -76,237 +85,25 @@ In *publication* the mvel expression `hashtags` declares that the event category
 twitter_hashtag_filter {
   type = filter 
   subscriptions = [ {channel = "twitter"} ]
-  publication = { channel = "twitter:hashtag", categories = { mvel = "hashtags" } }
+  publication = { channel = "twitter:hashtag" }
   expression = { mvel = "hashtags == null || hashtags.size() == 0" } 
   accept = false
 }
 ```
 
-#### Regression analyser
-A [*Regression analyser*]() analyses events categorized by hashtag and creates a *ValueEvent* with the regression coefficient for events from the last 15 minutes.
-    
-> "coefficient" is supposed to represent the regression coefficient. Maybe not totally scientifically correct, but this means that the number of events grows with more than [coefficient]*[no event] under the specified time frame. A coefficient with a negative value indicates that the number of arriving event is declining.
+#### Count analyser
 
 ```text
-twitter_hashtag_trend {
-  type = regressionAnalyser
+twitter_hashtag_counter {
+  type = countAnalyser
   subscriptions = [ { channel = "twitter:hashtag" } ]
-  publication = { channel = "twitter:hashtag:trend" }
-  categorize = true
-  minSize = 25
+  publication = { channel = "twitter:hashtag:count" }
+  categorization = { OneAndOne { mvel = "hashtags" } }
   timeframe = 15 minutes
 }
-
-```
-
-#### Alerter
-A *alerter* listens to `twitter:hashtag:trend` and alerts when the regression coefficient exceeds 1.0.
-
-```text
-twitter_hashtag_trending {
-  type = alerter
-  subscriptions = [ { channel = "twitter:hashtag:trend" } ]
-  publication = { channel = "twitter:hashtag:trending" }
-  categorize = true
-  expression = { mvel = "value > 1.0" }
-}
-```
-
-#### Log producer
-Logs alerts
-
-```text
-log_trending_hashtags {
-  type = logProducer
-  subscriptions = [ { channel = "twitter:hashtag:trending" } ]
-  loglevel = INFO
-}
-```
-
-### Popular URL's
-Look for URL's that are retweeded more than 50 times in an hour.
-
-#### Filters
-The filtering is done in two steps in the URL flow. First we filter out all tweets that isn't a retweet and sends the rest to `twitter:retweet`. Then we filter out tweets not containing an URL and send the rest to `twitter:url` categorised by URL.
-
-##### Retweet filter
-```text
-twitter_rt_filter {
-  type = filter
-  subscriptions = [ {channel = "twitter"} ]
-  publication = { channel = "twitter:rt" }
-  expression = { mvel = "!message.startsWith('RT')" }
-  accept = false
-}
-```
-
-##### URL filter
-```text
-twitter_url_filter {
-  type = filter
-  subscriptions = [ {channel = "twitter:rt"} ]
-  publication = { channel = "twitter:url", categories = { mvel = "urls"} }
-  expression = { mvel = "urls == null || urls.size() == 0" }
-  accept = false
-}
-```
-
-#### Count analyser
-A [*Count analyser*](https://github.com/aorwall/evactor/blob/master/core/src/main/scala/org/evactor/process/analyse/count/CountAnalyser.scala) subscribes to `twitter:url` and sends a ValueEvent with the current number of events of a category from the last 30 minutes to  `twitter:url:count`.
-
-```text
-twitter_url_popular {
-  type = countAnalyser
-  subscriptions = [ { channel = "twitter:rt" } ]
-  publication = { channel = "twitter:url:count" }
-  categorize = true
-  timeframe = 30 minutes
-}
-```
-
-#### Alerter
-A *alerter* listens to `twitter:hashtag:count` and alerts when the count exceeds 5.
-
-```text
-twitter_url_popular {
-  type = alerter
-  subscriptions = [ { channel = "twitter:url:count" } ]
-  publication = { channel = "twitter:url:popular" }
-  categorize = true
-  expression = { mvel = "value > 5" }
-}
-```
-
-#### Log producer
-Logs alert
-
-```text
-log_popular_urls {
-  type = logProducer
-  subscriptions = [ { channel = "twitter:url:popular" } ]
-  loglevel = INFO
-}
-```
-
-### Log tweets about Scala, Akka and Cassandra
-An *LogProducer* subscribes to `twitter:hashtag` and the categories `scala`, `cassandra` and `akka`.
-
-> This won't happen very often because the Spritzer stream just gives us 1% of all tweets. If you want to receive all tweets with these hashtags, try the following URL: https://stream.twitter.com/1/statuses/filter.json?track=scala,cassandra,akka
-
-```text
-log_cool_hashtags {
-  type = logProducer
-  subscriptions = [ 
-    { channel = "twitter:hashtag", category = "akka" },
-    { channel = "twitter:hashtag", category = "scala" },
-    { channel = "twitter:hashtag", category = "cassandra" }]
-  loglevel = INFO
-}
-```
-
-Apache Cassandra
----------------------
-Instructions on how to store events and statistics to an Apache Cassandra database.
+```   
 
 
-### Apache Cassandra
-Install [Apache Cassandra](http://cassandra.apache.org/). Instructions is found [here](http://wiki.apache.org/cassandra/GettingStarted)
-
-Add the column families to Cassandra with *cassandra-cli*:
-```text
-create keyspace Evactor;
-use Evactor;
-create column family Channel with default_validation_class=CounterColumnType and comparator = UTF8Type and replicate_on_write=true;
-create column family Event with comparator = UTF8Type;
-create column family Timeline with comparator = UUIDType;
-create column family Statistics with default_validation_class=CounterColumnType and comparator = LongType and replicate_on_write=true;
-create column family 'Index' with default_validation_class=CounterColumnType and comparator = UTF8Type and replicate_on_write=true;
-create column family Latency with default_validation_class=CounterColumnType and comparator = LongType and replicate_on_write=true;
-create column family KpiSum with comparator = LongType;
-``` 
-
-Decomment the following section in application.conf:
-```text
-storage {
-    
-  implementation = "org.evactor.storage.cassandra.CassandraStorage"
-    
-  channels = all
-
-  cassandra {
-    hostname = "localhost"
-    port = 9160
-    clustername = "ClusterTest"
-    keyspace = "Evactor"
-  }
-}
-```
-
-Evactor will now store events and statistics about events published on all channels. Use the API to browse through stored data.
-
-
-API
----------------------
-
-### Configuration
-Enable the API by decommenting the following section in `application.conf`:
-
-```text
-api {
-  port = 8080
-}
-```
-
-### Methods
-
-#### Channels
-URL: http://host:port/api/channels
-
-Response:
-
-
-#### Categories
-
-URL: http://host:port/api/categories/[channel]
-
-Response:
-
-#### Event timeline
-
-URL: http://host:port/api/timeline/\[channel\](/[category])
-Parameters:
-
-Response:
-
-
-#### Event
-URL: http://host:port/api/event/\[id\]
-
-Response:
-
-
-#### Statistics
-
-URL: http://host:port/api/stats/\[channel\](/[category])(?interval=[INTERVAL])
-Parameters:
-- Interval: HOUR, DAY, MONTH, YEAR
-
-Response:
-
-
-Monitoring
----------------------
-Enable [Ostrich](https://github.com/twitter/ostrich) monitoring by decommenting the following section in `application.conf`:
-
-```text
-monitoring {
-  ostrich {
-    port = 8888
-  }
-}
-```
-
-Go to `http://host:port/stats.txt`
 
 
 Licence
