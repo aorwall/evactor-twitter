@@ -24,7 +24,7 @@ object BamBuild extends Build {
   import Dependency._
   
   val Organization = "org.evactor"
-  val Version      = "0.1-SNAPSHOT"
+  val Version      = "0.3-SNAPSHOT"
   val ScalaVersion = "2.9.2"
 
   lazy val evactorTwitter = Project(
