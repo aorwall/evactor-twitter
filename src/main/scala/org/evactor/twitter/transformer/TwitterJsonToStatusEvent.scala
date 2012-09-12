@@ -28,7 +28,8 @@ import org.evactor.monitor.Monitored
 import com.fasterxml.jackson.databind.ObjectMapper
 
 class TwitterJsonToStatusEvent(collector: ActorRef)  extends Transformer with Monitored with ActorLogging {
-
+  import context.dispatcher
+  
   val format = new SimpleDateFormat("EEE MMM dd HH:mm:ss ZZZZZ yyyy", Locale.ENGLISH)
   val mapper = new ObjectMapper
     
@@ -81,7 +82,7 @@ class TwitterJsonToStatusEvent(collector: ActorRef)  extends Transformer with Mo
         incr("twittertransformer:delete")
       }
     } catch {
-      case e => {
+      case e : Throwable => {
         incr("twittertransformer:failure")
         log.warning("couldn't parse {}", jsonString, e)
         throw e

@@ -22,7 +22,7 @@ import org.apache.http.impl.client.DefaultHttpClient
 import org.evactor.listen.Listener
 import akka.actor.ActorLogging
 import akka.actor.ActorRef
-import akka.util.duration._
+import scala.concurrent.util.duration._
 import org.apache.commons.codec.binary.Base64
 import java.util.zip.GZIPInputStream
 import java.io.InputStream
@@ -34,6 +34,7 @@ import org.evactor.listen.ListenerException
 import org.evactor.monitor.Monitored
 
 class TwitterListener(sendTo: ActorRef, url: String, username: String, password: String) extends Listener with Monitored with ActorLogging {
+  import context.dispatcher
   
   lazy val stream = connect()
   var failures = 0  

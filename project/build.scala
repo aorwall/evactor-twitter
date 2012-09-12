@@ -25,7 +25,7 @@ object BamBuild extends Build {
   
   val Organization = "org.evactor"
   val Version      = "0.1-SNAPSHOT"
-  val ScalaVersion = "2.9.2"
+  val ScalaVersion = "2.10.0-M7"
 
   lazy val evactorTwitter = Project(
     id = "evactor-twitter",
@@ -85,7 +85,7 @@ object Dependency {
 
   // Versions
   object V {
-    val Akka = "2.1-20120701-002745"
+    val Akka = "2.1-M2"
     val Jackson = "2.0.2"
     val Scalatest = "1.6.1"
     val Slf4j = "1.6.4"
@@ -93,8 +93,8 @@ object Dependency {
   }
 
   val evactorCore = "org.evactor" % "core" % "0.3-SNAPSHOT"
-  val akkaKernel = "com.typesafe.akka" % "akka-kernel" % V.Akka
-  val akkaSlf4j = "com.typesafe.akka" % "akka-slf4j" % V.Akka
+  val akkaKernel = "com.typesafe.akka" % "akka-kernel_2.10.0-M7" % V.Akka
+  val akkaSlf4j = "com.typesafe.akka" % "akka-slf4j_2.10.0-M7" % V.Akka
   val httpClient = "org.apache.httpcomponents" % "httpclient" % "4.1"
   val jacksonMapper = "com.fasterxml.jackson.core" % "jackson-databind" % V.Jackson
   val jacksonCore = "com.fasterxml.jackson.core" % "jackson-core" % V.Jackson
@@ -110,7 +110,7 @@ object Dependency {
     val junit = "junit" % "junit" % "4.4" % "test"
     val scalatest = "org.scalatest" % "scalatest_2.9.1" % V.Scalatest % "test"
     val mockito = "org.mockito" % "mockito-core" % "1.8.1" % "test"
-    val akkaTestkit = "com.typesafe.akka" % "akka-testkit" % V.Akka % "test"
+    val akkaTestkit = "com.typesafe.akka" % "akka-testkit_2.10.0-M7" % V.Akka % "test"
   }
   
 }

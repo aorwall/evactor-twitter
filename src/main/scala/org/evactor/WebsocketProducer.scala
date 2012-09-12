@@ -23,7 +23,7 @@ import org.evactor.model.events.Event
 class WebsocketProducer (
     override val subscriptions: List[Subscription],
     val send: (Event) => Unit)
-  extends Processor (subscriptions) 
+  extends Processor  
   with ActorLogging {
   
   protected def process(event: Event) {
@@ -31,13 +31,12 @@ class WebsocketProducer (
   }
 
   override def preStart = {
-    log.info("Starting...")
+    log.info("starting...")
     super.preStart()
   }
   
-  
   override def postStop = {
-    log.info("Stopping...")
+    log.info("stopping...")
     super.postStop();
   }
   
