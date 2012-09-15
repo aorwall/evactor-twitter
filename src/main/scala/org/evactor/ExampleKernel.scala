@@ -38,7 +38,6 @@ object ExampleKernel {
 class ExampleKernel extends Bootable {
 
   val mapper = new ObjectMapper()
-  mapper.registerModule(DefaultScalaModule)
 
   val activeWebsockets = HashMap[String, ActorRef]()
   
