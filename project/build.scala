@@ -17,20 +17,19 @@ import sbt._
 import Keys._
 import sbtassembly.Plugin._
 import AssemblyKeys._
-import com.typesafe.startscript.StartScriptPlugin._
 
 object BamBuild extends Build {
   
   import Dependency._
   
   val Organization = "org.evactor"
-  val ScalaVersion = "2.10.0-M7"
+  val ScalaVersion = "2.10.2"
   val Version      = "0.3-SNAPSHOT"
 
   lazy val evactorTwitter = Project(
     id = "evactor-twitter",
     base = file("."),
-    settings = defaultSettings ++ startScriptForClassesSettings ++ exampleAssemblySettings ++ Seq(
+    settings = defaultSettings ++ exampleAssemblySettings ++ Seq(
       libraryDependencies ++= Seq (evactorCore, akkaKernel, akkaSlf4j, httpClient, logback, Test.scalatest, Test.junit, Test.akkaTestkit, jacksonCore, jacksonMapper, jacksonScala, unfilteredFilter, unfilteredNetty, unfilteredNettyServer, unfilteredWebsockets)
     )
   )
@@ -85,32 +84,32 @@ object Dependency {
 
   // Versions
   object V {
-    val Akka = "2.1-M2"
+    val Akka = "2.1.2"
     val Jackson = "2.0.2"
-    val Scalatest = "1.6.1"
+    val Scalatest = "1.9.1"
     val Slf4j = "1.6.4"
-    val Unfiltered = "0.6.3"
+    val Unfiltered = "0.6.8"
   }
 
   val evactorCore = "org.evactor" % "core" % "0.3-SNAPSHOT"
-  val akkaKernel = "com.typesafe.akka" % "akka-kernel_2.10.0-M7" % V.Akka
-  val akkaSlf4j = "com.typesafe.akka" % "akka-slf4j_2.10.0-M7" % V.Akka
+  val akkaKernel = "com.typesafe.akka" % "akka-kernel_2.10" % V.Akka
+  val akkaSlf4j = "com.typesafe.akka" % "akka-slf4j_2.10" % V.Akka
   val httpClient = "org.apache.httpcomponents" % "httpclient" % "4.1"
   val jacksonMapper = "com.fasterxml.jackson.core" % "jackson-databind" % V.Jackson
   val jacksonCore = "com.fasterxml.jackson.core" % "jackson-core" % V.Jackson
   val jacksonScala = "com.fasterxml.jackson.module" % "jackson-module-scala" % V.Jackson
   val logback = "ch.qos.logback" % "logback-classic" % "1.0.0" % "runtime"
   val slf4jApi = "org.slf4j" % "slf4j-api" % V.Slf4j
-  val unfilteredFilter = "net.databinder" % "unfiltered-filter_2.9.1" % V.Unfiltered
-  val unfilteredNetty = "net.databinder" % "unfiltered-netty_2.9.1" % V.Unfiltered
-  val unfilteredNettyServer = "net.databinder" % "unfiltered-netty-server_2.9.1" % V.Unfiltered
-  val unfilteredWebsockets = "net.databinder" % "unfiltered-netty-websockets_2.9.1" % V.Unfiltered
+  val unfilteredFilter = "net.databinder" % "unfiltered-filter_2.10" % V.Unfiltered
+  val unfilteredNetty = "net.databinder" % "unfiltered-netty_2.10" % V.Unfiltered
+  val unfilteredNettyServer = "net.databinder" % "unfiltered-netty-server_2.10" % V.Unfiltered
+  val unfilteredWebsockets = "net.databinder" % "unfiltered-netty-websockets_2.10" % V.Unfiltered
 
   object Test {
     val junit = "junit" % "junit" % "4.4" % "test"
-    val scalatest = "org.scalatest" % "scalatest_2.9.1" % V.Scalatest % "test"
+    val scalatest = "org.scalatest" % "scalatest_2.10" % V.Scalatest % "test"
     val mockito = "org.mockito" % "mockito-core" % "1.8.1" % "test"
-    val akkaTestkit = "com.typesafe.akka" % "akka-testkit_2.10.0-M7" % V.Akka % "test"
+    val akkaTestkit = "com.typesafe.akka" % "akka-testkit_2.10" % V.Akka % "test"
   }
   
 }

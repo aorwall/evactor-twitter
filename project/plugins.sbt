@@ -4,6 +4,4 @@ resolvers += Resolver.url("sbt-plugin-releases", new URL("http://scalasbt.artifa
 
 addSbtPlugin("com.typesafe.sbteclipse" % "sbteclipse-plugin" % "2.0.0")
 
-addSbtPlugin("com.eed3si9n" % "sbt-assembly" % "0.8.1")
-
-addSbtPlugin("com.typesafe.startscript" % "xsbt-start-script-plugin" % "0.5.2")
+addSbtPlugin("com.eed3si9n" % "sbt-assembly" % "0.9.0")

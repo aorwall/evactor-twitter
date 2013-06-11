@@ -22,7 +22,7 @@ import org.apache.http.impl.client.DefaultHttpClient
 import org.evactor.listen.Listener
 import akka.actor.ActorLogging
 import akka.actor.ActorRef
-import scala.concurrent.util.duration._
+import scala.concurrent.duration._
 import org.apache.commons.codec.binary.Base64
 import java.util.zip.GZIPInputStream
 import java.io.InputStream
