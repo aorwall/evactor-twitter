@@ -31,7 +31,7 @@ class TwitterJsonToStatusEvent(collector: ActorRef)  extends Transformer with Mo
   }
   
   def transform(status: Status) {
-    log.info(status.getText)
+    log.debug("received: {}", status.getText)
 
     val text = status.getText
     val id = status.getId.toString
