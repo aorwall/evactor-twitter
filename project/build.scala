@@ -24,7 +24,7 @@ object BamBuild extends Build {
   
   val Organization = "org.evactor"
   val ScalaVersion = "2.10.2"
-  val Version      = "0.3-SNAPSHOT"
+  val Version      = "0.4-SNAPSHOT"
 
   lazy val evactorTwitter = Project(
     id = "evactor-twitter",
@@ -35,7 +35,7 @@ object BamBuild extends Build {
   )
 
   override lazy val settings = super.settings ++ Seq(
-        resolvers += "Typesafe Snapshot Repository" at "http://repo.typesafe.com/typesafe/snapshots/"
+        resolvers += "Sonatype Snapshot Repository" at "https://oss.sonatype.org/content/repositories/snapshots/"
   )
   
   lazy val buildSettings = Defaults.defaultSettings ++ Seq(
@@ -84,20 +84,20 @@ object Dependency {
 
   // Versions
   object V {
-    val Akka = "2.1.2"
-    val Jackson = "2.0.2"
     val Scalatest = "1.9.1"
+    val Akka = "2.1.4"
+    val Jackson = "2.1.3"
     val Slf4j = "1.6.4"
     val Unfiltered = "0.6.8"
   }
 
-  val evactorCore = "org.evactor" % "core" % "0.3-SNAPSHOT"
   val akkaKernel = "com.typesafe.akka" % "akka-kernel_2.10" % V.Akka
   val akkaSlf4j = "com.typesafe.akka" % "akka-slf4j_2.10" % V.Akka
+  val evactorCore = "org.evactor" % "core" % "0.5-SNAPSHOT"
   val httpClient = "org.apache.httpcomponents" % "httpclient" % "4.1"
   val jacksonMapper = "com.fasterxml.jackson.core" % "jackson-databind" % V.Jackson
   val jacksonCore = "com.fasterxml.jackson.core" % "jackson-core" % V.Jackson
-  val jacksonScala = "com.fasterxml.jackson.module" % "jackson-module-scala" % V.Jackson
+  val jacksonScala = "com.fasterxml.jackson.module" % "jackson-module-scala_2.10" % V.Jackson
   val logback = "ch.qos.logback" % "logback-classic" % "1.0.0" % "runtime"
   val slf4jApi = "org.slf4j" % "slf4j-api" % V.Slf4j
   val unfilteredFilter = "net.databinder" % "unfiltered-filter_2.10" % V.Unfiltered
