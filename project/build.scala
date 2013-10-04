@@ -15,10 +15,9 @@
  */
 import sbt._
 import Keys._
-import sbtassembly.Plugin._
-import AssemblyKeys._
+import com.typesafe.sbt.SbtStartScript
 
-object BamBuild extends Build {
+object EvactorBuild extends Build {
   
   import Dependency._
   
@@ -29,8 +28,8 @@ object BamBuild extends Build {
   lazy val evactorTwitter = Project(
     id = "evactor-twitter",
     base = file("."),
-    settings = defaultSettings ++ exampleAssemblySettings ++ Seq(
-      libraryDependencies ++= Seq (evactorCore, akkaKernel, akkaSlf4j, logback, Test.scalatest, Test.junit, Test.akkaTestkit, jacksonCore, jacksonMapper, jacksonScala, unfilteredFilter, unfilteredNetty, unfilteredNettyServer, unfilteredWebsockets, twitter4j, twitter4jStream)
+    settings = defaultSettings ++ SbtStartScript.startScriptForClassesSettings ++ Seq(
+      libraryDependencies ++= Seq (evactorCore, akkaKernel, akkaSlf4j, logback, jacksonCore, jacksonMapper, jacksonScala, unfilteredFilter, unfilteredNetty, unfilteredNettyServer, unfilteredWebsockets, twitter4j, twitter4jStream)
     )
   )
 
@@ -50,34 +49,6 @@ object BamBuild extends Build {
 	  javacOptions  ++= Seq("-Xlint:unchecked", "-Xlint:deprecation")
   )  
 
-  lazy val exampleAssemblySettings = assemblySettings ++ Seq(
-    test in assembly := {},
-	excludedJars in assembly <<= (fullClasspath in assembly) map { cp => 
-	  cp filter { x => x.data.getName == "uuid-3.2.0.jar" ||  x.data.getName == "slf4j-log4j12-1.6.1.jar" || x.data.getName == "log4j-1.2.16.jar" || x.data.getName == "commons-logging-1.1.1.jar" }},
-	excludedFiles in assembly := { (bases: Seq[File]) =>
-	  bases flatMap { base =>
-        (base / "META-INF" * "*").get collect { 
-          case f if f.getName.toLowerCase == "license" => f
-          case f if f.getName.toLowerCase == "license.txt" => f
-          case f if f.getName.toLowerCase == "manifest.mf" => f
-          case f if f.getName.toLowerCase == "notice.txt" => f
-          case f if f.getName.toLowerCase == "notice" => f
-          case f if f.getName.toLowerCase == "dependencies" => f
-          case f if f.getName.toLowerCase == "spring.tooling" => f
-          case f if f.getName.toLowerCase == "index.list" => f
-	    }
-	  }
-	},
-	mergeStrategy in assembly <<= (mergeStrategy in assembly) { (old) =>
-	  {
-	    case "application.conf" => MergeStrategy.concat
-            case "overview.html" => MergeStrategy.concat
-	    case x => old(x)
-	  }
-	},
-	mainClass in assembly := Some("org.evactor.ExampleKernel"),
-	jarName in assembly := "evactorTwitter.jar"
-  )
 }
 
 object Dependency {
@@ -106,13 +77,6 @@ object Dependency {
   val unfilteredNetty = "net.databinder" % "unfiltered-netty_2.10" % V.Unfiltered
   val unfilteredNettyServer = "net.databinder" % "unfiltered-netty-server_2.10" % V.Unfiltered
   val unfilteredWebsockets = "net.databinder" % "unfiltered-netty-websockets_2.10" % V.Unfiltered
-
-  object Test {
-    val junit = "junit" % "junit" % "4.4" % "test"
-    val scalatest = "org.scalatest" % "scalatest_2.10" % V.Scalatest % "test"
-    val mockito = "org.mockito" % "mockito-core" % "1.8.1" % "test"
-    val akkaTestkit = "com.typesafe.akka" % "akka-testkit_2.10" % V.Akka % "test"
-  }
   
 }
 
