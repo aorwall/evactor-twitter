@@ -38,6 +38,7 @@ object ExampleKernel {
 class ExampleKernel extends Bootable {
 
   val mapper = new ObjectMapper()
+  mapper.registerModule(DefaultScalaModule)
 
   val activeWebsockets = HashMap[String, ActorRef]()
   
@@ -56,6 +57,7 @@ class ExampleKernel extends Bootable {
   lazy val indexFile = io.Source.fromInputStream(getClass.getResourceAsStream("/index.html")).mkString
   
   def sendEvent(s: WebSocket)(e: Event): Unit = {
+    println(mapper.writeValueAsString(e))
     s.send(mapper.writeValueAsString(e))
   }
   

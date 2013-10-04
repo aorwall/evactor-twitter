@@ -14,8 +14,8 @@ h2{margin-bottom:10px}
 .word{float:left;margin:4px}
 .count{color:#bbb;font-size:80%;margin-left:2px}
 .trending{float:left;width:30%;}
-.up{color:#0f0;font-weight:bold;}
-.down{color:#f00;font-weight:bold;}
+.up{color:#0f0;font-weight:bold;margin-left:3px;}
+.down{color:#f00;font-weight:bold;margin-left:3px;}
 .footer {float:none !important;clear:both !important;width:100%;text-align: center;font-size:16px;position: absolute;bottom:0px;left:0px;background:#333;color:#ccc;padding:10 0 10 0px;}
 ol{margin-left:40px;}
 li{margin: 3px;}
@@ -53,10 +53,11 @@ a{color:#eee}
       var debug = function(msg) { $("#debug").html(msg); }
 
       // generate popular hashtags
-      createSocket(hashtagCountHost, function (e) { 
-          var event = jq.parseJSON(e.data)
-          var value = event.value
-          var name = event.categories[0]
+      createSocket(hashtagCountHost, function (e) {
+          var event = jq.parseJSON(e.data);
+
+          var value = event.value;
+          var name = event.categories[0];
           var min, min_index = 0;
           
           count++;
@@ -154,7 +155,7 @@ a{color:#eee}
           });
 
           var html = ""; 
-          for(var j = 0; j < 25; j++){
+          for(var j = 0; j < 10; j++){
              if(trending_hashtags[j] != null ){
                
                html = html + '<li>' + trending_hashtags[j].text + '<span class="count">' + trending_hashtags[j].coeff.toFixed(2) + '</span>';
