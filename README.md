@@ -27,6 +27,8 @@ Generate start script: `sbt start-script`
 
 Start the application with the start script: `target/start`
 
+Go to http://localhost:8080 to see the app in action.
+
 
 Understand the configuration
 ---------------------
