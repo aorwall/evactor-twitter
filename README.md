@@ -12,10 +12,8 @@ of this page is found here:
 By following the instructions below you should be able to deploy this application yourself.
 
 
-Installation
+Run the application
 ---------------------
-
-### Build from source
 
 Install [sbt](https://github.com/harrah/xsbt/wiki/Getting-Started-Setup) if you don't already have it. The application has been tested with sbt 0.11.3.
 
@@ -23,17 +21,11 @@ Clone the Evactor repo: `git clone git://github.com/aorwall/evactor-twitter.git`
 
 Go to https://dev.twitter.com/apps and create a new application. Then use the credentials provided there in `src/main/resources/twitter4j.properties`.
 
-Build the example jar with the following command:
-```text
-$ sbt assembly
-```
+Compile the code: `sbt compile`
 
-An executable jar file can now be found in `evactor/example/target` and is executed with the command `java -jar evactorExample.jar`. 
+Generate start script: `sbt start-script`
 
-
-### Run binary
-
-
+Start the application with the start script: `target/start`
 
 
 Understand the configuration
@@ -51,14 +43,12 @@ To get events into the Evactor event stream we need a [*collector*](https://gith
 3. The transformers send the message to the collector that checks for duplicates and publishes the StatusEvent to the channel `twitter`.
 
 #### The configuration
-> To use the Twitter Stream API, you must have a Twitter account and replace *[TWITTER_USERNAME]* and *[TWITTER_PASSWORD]* with your own credentials.
+> To use the Twitter Stream API, go to https://dev.twitter.com/apps and create a new application. Then use the credentials provided there in `src/main/resources/twitter4j.properties`.
 
 ```text
 twitter_collector {
-  # CHANGE [TWITTER_USERNAME] AND [TWITTER_PASSWORD] TO YOUR OWN TWITTER CREDENTIALS!
   listener {
     class = "org.evactor.twitter.listener.TwitterListener"
-    arguments = [ "https://stream.twitter.com/1/statuses/sample.json", "[TWITTER_USERNAME]", "[TWITTER_PASSWORD]" ]
   }
   transformer {
     class = "org.evactor.twitter.transformer.TwitterJsonToStatusEvent"
@@ -102,8 +92,6 @@ twitter_hashtag_counter {
   timeframe = 15 minutes
 }
 ```   
-
-
 
 
 Licence
