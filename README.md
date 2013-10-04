@@ -21,7 +21,7 @@ Install [sbt](https://github.com/harrah/xsbt/wiki/Getting-Started-Setup) if you 
 
 Clone the Evactor repo: `git clone git://github.com/aorwall/evactor-twitter.git`
 
-Replace `[TWITTER_USERNAME]` and `[TWITTER_PASSWORD]` your own Twitter username and password in: `evactor/example/src/main/resources/application.conf`
+Go to https://dev.twitter.com/apps and create a new application. Then use the credentials provided there in `src/main/resources/twitter4j.properties`.
 
 Build the example jar with the following command:
 ```text
