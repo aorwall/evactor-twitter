@@ -15,29 +15,27 @@
  */
 package org.evactor.twitter.listener
 
-import java.io.BufferedReader
-import java.io.InputStreamReader
-import org.apache.http.client.methods.HttpGet
-import org.apache.http.impl.client.DefaultHttpClient
 import org.evactor.listen.Listener
 import akka.actor.ActorLogging
 import akka.actor.ActorRef
-import scala.concurrent.duration._
-import org.apache.commons.codec.binary.Base64
-import java.util.zip.GZIPInputStream
-import java.io.InputStream
-import org.apache.http.params.HttpConnectionParams
-import org.evactor.ConfigurationException
 import org.evactor.Start
-import java.io.BufferedInputStream
-import org.evactor.listen.ListenerException
 import org.evactor.monitor.Monitored
+import twitter4j._
 
-class TwitterListener(sendTo: ActorRef, url: String, username: String, password: String) extends Listener with Monitored with ActorLogging {
-  import context.dispatcher
-  
-  lazy val stream = connect()
-  var failures = 0  
+class TwitterListener(sendTo: ActorRef) extends Listener with Monitored with ActorLogging {
+
+  class TweetListener extends StatusListener {
+    def onStatus(status: Status) {
+      sendTo ! status
+    }
+    def onDeletionNotice(statusDeletionNotice: StatusDeletionNotice) {}
+    def onTrackLimitationNotice(numberOfLimitedStatuses: Int) {}
+    def onException(ex: Exception) {
+      log.error("failure", ex)
+    }
+    def onStallWarning(warning: StallWarning) {}
+    def onScrubGeo(userId: Long, upToStatusId: Long) {}
+  }
   
   def receive = {
     case Start => read()
@@ -45,78 +43,14 @@ class TwitterListener(sendTo: ActorRef, url: String, username: String, password:
   }
 
   private[this] def read(){
-    
-    val inputLine = try{
-      stream.readLine()
-    } catch {
-      case ce: ConfigurationException => throw ce
-      case e: Exception => throw new ListenerException("caught an exception while trying to read from stream. %s".format(e))
-    } 
-    
-    if (inputLine == null) {
-      incr("null")
-      log.debug("inputline is null, backing off for 50 ms")
-      failures = failures +1
-      context.system.scheduler.scheduleOnce(50 milliseconds, context.self, new Start)
-    } else if (inputLine.trim.size == 0) {
-      incr("empty")
-      log.debug("inputline is empty, backing off for 50 ms")
-      failures = failures +1
-      context.system.scheduler.scheduleOnce(50 milliseconds, context.self, new Start)
-    } else {
-      incr("status")
-      log.debug("inputline: {}", inputLine)
-      failures = 0
-      sendTo ! inputLine
-      context.self ! Start
-    }
-    
-    if(failures > 10){
-      throw new ListenerException("more than 10 connection failures in a row")
-    }
-  }
-  
-  private[this] def connect (): BufferedReader = {
-    
-    if(url == null)
-      throw new ConfigurationException("No url provided")
-    
-    if(username == null || password == null)
-      throw new ConfigurationException("No credentials provided")
-    
-    val credentials = if(System.getenv("TWITTER_USERNAME") != null && System.getenv("TWITTER_PASSWORD") != null){
-      "%s:%s".format(System.getenv("TWITTER_USERNAME"), System.getenv("TWITTER_PASSWORD"))
-    } else {
-      "%s:%s".format(username, password)
-    }
-    
-     
-    val client = new DefaultHttpClient();
-    val method = new HttpGet(url);
-    val encoded = Base64.encodeBase64String(credentials.getBytes)
-    method.setHeader("Authorization", "Basic " + encoded);
-    method.setHeader("Content-Type", "application/x-www-form-urlencoded") 
-    method.setHeader("User-Agent", "evactor") 
-    val params = client.getParams()
-    HttpConnectionParams.setConnectionTimeout(params, 10000)
-    HttpConnectionParams.setSoTimeout(params, 10000)
-//    method.setHeader("Accept-Encoding", "deflate, gzip")
-//    method.setHeader("Host", "stream.twitter.com")
- 
-    val response = client.execute(method)
-    
-    if(response.getStatusLine.getStatusCode >= 400){
-      
-      if(response.getStatusLine.getStatusCode == 401){
-        throw new ConfigurationException("Twitter returned \"401 Unauthorized\". Check the Twitter username and password.")
-      } else {
-        throw new ListenerException("Couldn't connect to the Twitter stream API, status returned: %s".format(response.getStatusLine))  
-      }
-      
-    }
-    
-    val entity = response.getEntity
-    new BufferedReader(new InputStreamReader(entity.getContent))
+    // reads oauth credentials from twitter4j.properties
+    val twitterStream = new TwitterStreamFactory().getInstance()
+
+    twitterStream.addListener(new TweetListener)
+
+    // sample() method internally creates a thread which manipulates TwitterStream and calls these adequate listener methods continuously.
+    twitterStream.sample();
+
   }
   
   override def preStart = {
@@ -125,9 +59,3 @@ class TwitterListener(sendTo: ActorRef, url: String, username: String, password:
   }
   
 }
-
-//class StreamingGZIPInputStream(val wrapped: InputStream ) extends GZIPInputStream(wrapped) {
-//
-//  override def available(): Int = wrapped.available()
-//
-//}

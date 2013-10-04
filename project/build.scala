@@ -30,7 +30,7 @@ object BamBuild extends Build {
     id = "evactor-twitter",
     base = file("."),
     settings = defaultSettings ++ exampleAssemblySettings ++ Seq(
-      libraryDependencies ++= Seq (evactorCore, akkaKernel, akkaSlf4j, httpClient, logback, Test.scalatest, Test.junit, Test.akkaTestkit, jacksonCore, jacksonMapper, jacksonScala, unfilteredFilter, unfilteredNetty, unfilteredNettyServer, unfilteredWebsockets)
+      libraryDependencies ++= Seq (evactorCore, akkaKernel, akkaSlf4j, logback, Test.scalatest, Test.junit, Test.akkaTestkit, jacksonCore, jacksonMapper, jacksonScala, unfilteredFilter, unfilteredNetty, unfilteredNettyServer, unfilteredWebsockets, twitter4j, twitter4jStream)
     )
   )
 
@@ -84,6 +84,7 @@ object Dependency {
 
   // Versions
   object V {
+    val Evactor = "0.5-SNAPSHOT"
     val Scalatest = "1.9.1"
     val Akka = "2.1.4"
     val Jackson = "2.1.3"
@@ -93,13 +94,14 @@ object Dependency {
 
   val akkaKernel = "com.typesafe.akka" % "akka-kernel_2.10" % V.Akka
   val akkaSlf4j = "com.typesafe.akka" % "akka-slf4j_2.10" % V.Akka
-  val evactorCore = "org.evactor" % "core" % "0.5-SNAPSHOT"
-  val httpClient = "org.apache.httpcomponents" % "httpclient" % "4.1"
+  val evactorCore = "org.evactor" % "core" % V.Evactor
   val jacksonMapper = "com.fasterxml.jackson.core" % "jackson-databind" % V.Jackson
   val jacksonCore = "com.fasterxml.jackson.core" % "jackson-core" % V.Jackson
   val jacksonScala = "com.fasterxml.jackson.module" % "jackson-module-scala_2.10" % V.Jackson
   val logback = "ch.qos.logback" % "logback-classic" % "1.0.0" % "runtime"
   val slf4jApi = "org.slf4j" % "slf4j-api" % V.Slf4j
+  val twitter4j = "org.twitter4j" % "twitter4j-core" % "3.0.3"
+  val twitter4jStream = "org.twitter4j" % "twitter4j-stream" % "3.0.3"
   val unfilteredFilter = "net.databinder" % "unfiltered-filter_2.10" % V.Unfiltered
   val unfilteredNetty = "net.databinder" % "unfiltered-netty_2.10" % V.Unfiltered
   val unfilteredNettyServer = "net.databinder" % "unfiltered-netty-server_2.10" % V.Unfiltered
